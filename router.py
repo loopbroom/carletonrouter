@@ -34,6 +34,8 @@ def main():
 
     create_hardware_file("StatefulHardware.txt")
 
+    print("Enter CLI command: ")
+
     try:
         while t < 60:
             current_state, control_values, signal_values = read_hardware_state(file_path)
