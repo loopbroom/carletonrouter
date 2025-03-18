@@ -29,6 +29,10 @@ def main():
     history = []
     t = 0
 
+    # Keep track of the last seen signal values
+    last_signal_index = 0
+    last_signal_value = 0
+
     try:
         while t < 60:
             state_values, control_values, signal_values = read_hardware_state(file_path)
@@ -42,9 +46,13 @@ def main():
             signal_value = signal_values[1]
             
             # If signal_index is 1-4, update the corresponding control value
-            if 1 <= signal_index <= 4:
+            if (signal_index != last_signal_index or signal_value != last_signal_value) and 1 <= signal_index <= 4:
                 mutate_hardware(file_path, signal_index - 1, signal_value)
                 history.append(f"{t} set {signal_index - 1} {signal_value}")
+                
+                # Update the last seen values
+                last_signal_index = signal_index
+                last_signal_value = signal_value
             
             # Case 4: Cron Job - swap state values at indices 1 and 2 when t is multiple of 10
             if t % 10 == 0:
