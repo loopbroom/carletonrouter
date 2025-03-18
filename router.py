@@ -1,4 +1,3 @@
-import subprocess
 import sys
 import time
 import select
@@ -33,9 +32,11 @@ def main():
     last_signal_index = 0
     last_signal_value = 0
 
+    create_hardware_file()
+
     try:
         while t < 60:
-            state_values, control_values, signal_values = read_hardware_state(file_path)
+            current_state, control_values, signal_values = read_hardware_state(file_path)
             t += 1
 
             # Write Your Code Here Start
@@ -56,9 +57,6 @@ def main():
             
             # Case 4: Cron Job - swap state values at indices 1 and 2 when t is multiple of 10
             if t % 10 == 0:
-                # Get the current state values
-                current_state, _, _ = read_hardware_state(file_path)
-                
                 # Swap the values at indices 0 and 1 (0-indexed, which is 1 and 2 in 1-indexed)
                 temp = current_state[0]
                 current_state[0] = current_state[1]
@@ -72,7 +70,7 @@ def main():
             
             # Case 5: Allow CLI input for manual configuration
             # Check if there's any input available without blocking
-            i, o, e = select.select([sys.stdin], [], [], 0)
+            i, _, _ = select.select([sys.stdin], [], [], 0)
             if i:
                 process_cli_input(file_path, history, t)
 
@@ -82,6 +80,7 @@ def main():
     
     finally:
         # Write history to log file upon program termination
+        print(history)
         with open('router_history.log', 'w') as log_file:
             for entry in history:
                 log_file.write(entry + '\n')
