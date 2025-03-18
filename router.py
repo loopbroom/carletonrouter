@@ -2,7 +2,7 @@ import sys
 import time
 import select
 
-from simulation import read_hardware_state, write_hardware_state, calculate_f, mutate_hardware, mutate_database, create_hardware_file, file_path
+from simulation import read_hardware_state, write_hardware_state, mutate_hardware, mutate_database, create_hardware_file, file_path
 
 def print_cli_history(history):
     for entry in history:
@@ -32,16 +32,14 @@ def main():
     last_signal_index = 0
     last_signal_value = 0
 
-    create_hardware_file()
+    create_hardware_file("StatefulHardware.txt")
 
     try:
         while t < 60:
             current_state, control_values, signal_values = read_hardware_state(file_path)
             t += 1
 
-            # Write Your Code Here Start
-            
-            # Case 2 & 3: Handling Control Traffic and Management Functionality
+            # Case 2: Handling Control Traffic
             # Process signals from the signal_values
             signal_index = signal_values[0]
             signal_value = signal_values[1]
@@ -54,6 +52,12 @@ def main():
                 # Update the last seen values
                 last_signal_index = signal_index
                 last_signal_value = signal_value
+
+            # Case 3: Allow CLI input for manual configuration
+            # Check if there's any input available without blocking
+            i, _, _ = select.select([sys.stdin], [], [], 0)
+            if i:
+                process_cli_input(file_path, history, t)
             
             # Case 4: Cron Job - swap state values at indices 1 and 2 when t is multiple of 10
             if t % 10 == 0:
@@ -68,16 +72,11 @@ def main():
                 # Record the swap in history
                 history.append(f"{t} swap {current_state[1]} {current_state[0]}")
             
-            # Case 5: Allow CLI input for manual configuration
-            # Check if there's any input available without blocking
-            i, _, _ = select.select([sys.stdin], [], [], 0)
-            if i:
-                process_cli_input(file_path, history, t)
-
-            # Write Your Code Here End
 
             time.sleep(1)  # Wait for 1 second before polling again
     
+    # Case 5: Recovery and Documentation - write router log on program termination
+
     finally:
         # Write history to log file upon program termination
         print(history)
