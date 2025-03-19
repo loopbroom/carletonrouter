@@ -20,7 +20,7 @@ def process_cli_input(file_path, history, t):
                 print(f"Invalid Input - Error: {index + 1} is an invalid index")
             else:
                 mutate_database(file_path, index, value)
-                history.append(f"{t} set {index} {value}")
+                history.append(f"{t} set {index + 1} {value}")
     except Exception as e:
         print(f"Invalid Input - Error: {str(e)}")
 
